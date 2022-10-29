@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -27,7 +28,13 @@ import (
 type DockerClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
+	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
+	// +optional
+	ControlPlaneEndpoint clusterv1.APIEndpoint `json:"controlPlaneEndpoint"`
+	// LoadBalancerImage allows you override the load balancer image. If not specified a
+	// default image will be used.
+	// +optional
+	LoadBalancerImage string `json:"loadbalancerImage,omitempty"`
 	// Foo is an example field of DockerCluster. Edit dockercluster_types.go to remove/update
 	Foo string `json:"foo,omitempty"`
 }
@@ -35,6 +42,10 @@ type DockerClusterSpec struct {
 // DockerClusterStatus defines the observed state of DockerCluster
 type DockerClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Ready indicates that the cluster is ready.
+	// +optional
+	// +kubebuilder:default=falctrl.SetupSignalHandler()se
+	Ready bool `json:"ready"`
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
@@ -58,6 +69,12 @@ type DockerClusterList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []DockerCluster `json:"items"`
 }
+
+const (
+	// ClusterFinalizer allows cleaning up resources associated with
+	// DockerCluster before removing it from the apiserver.
+	ClusterFinalizer = "dockercluster.infrastructure.cluster.x-k8s.io"
+)
 
 func init() {
 	SchemeBuilder.Register(&DockerCluster{}, &DockerClusterList{})
